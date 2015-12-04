@@ -5,9 +5,9 @@ screenLock =Semaphore(value=1) #to prevent multiple threads to print to the scre
 def connScan(tgtHost,tgtPort):
 	try:
 		connSkt=socket(AF_INET, SOCK_STREAM)
-		connSkt.connect((tgtHost,tgtPort))
-		connSkt.send('PythonPortScan\r\n')
-		results=connSkt.recv(100)
+		connSkt.connect((tgtHost,tgtPort)) #establishes a connection to target
+		connSkt.send('PythonPortScan\r\n') #send a string of data to the open port and wait for the response
+		results=connSkt.recv(100) #the response might give us an indication of the appliction running on the target host and port
 		screenLock.acquire()
 		print '[+]%d/tcp open'% tgtPort
 		print '[+] '+str(results)
@@ -43,7 +43,6 @@ def main():
 	parser.add_option('-p',dest='tgtPort',type='string',help='specify target port[s] inside \"\" separated by commas')
 	(options,args)=parser.parse_args()
 	tgtHost=options.tgtHost
-	print options.tgtPort
 	tgtPorts=str(options.tgtPort).split(", ")
 	if(tgtHost==None) | (tgtPorts[0]==None):
 		print parser.usage
