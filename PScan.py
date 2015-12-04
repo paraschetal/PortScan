@@ -1,17 +1,25 @@
 import optparse
-
+from threading import *
 from socket import *
+screenLock =Semaphore(value=1) #to prevent multiple threads to print to the screen at once
 def connScan(tgtHost,tgtPort):
 	try:
 		connSkt=socket(AF_INET, SOCK_STREAM)
 		connSkt.connect((tgtHost,tgtPort))
 		connSkt.send('PythonPortScan\r\n')
 		results=connSkt.recv(100)
+		screenLock.acquire()
 		print '[+]%d/tcp open'% tgtPort
 		print '[+] '+str(results)
-		connSkt.close()
+		
 	except:
+		screenLock.acquire()
 		print '[-]%d/tcp closed'% tgtPort
+	
+	finally:
+		screenLock.release()
+		connSkt.close()
+
 
 def portScan(tgtHost,tgtPorts):
 	try:
@@ -26,11 +34,11 @@ def portScan(tgtHost,tgtPorts):
 		print 'Scan Results for: '+ tgtIP
 	setdefaulttimeout(1)
 	for tgtPort in tgtPorts:
-		print 'Scanning port '+tgtPort
-		connScan(tgtHost, int(tgtPort))	
+		t=Thread(target=connScan, args=(tgtHost,int(tgtPort)))
+		t.start()	
 
 def main():		
-	parser=optparse.OptionParser('usage %prog -H ' + '<target host> -p <target ports>') #Our program utilizes the optparse library to parse command line arguments
+	parser=optparse.OptionParser('usage %prog -H ' + '<target host> -p <target ports>') #parse command line arguments
 	parser.add_option('-H', dest='tgtHost', type='string', help='specify target host')
 	parser.add_option('-p',dest='tgtPort',type='string',help='specify target port[s] inside \"\" separated by commas')
 	(options,args)=parser.parse_args()
@@ -38,7 +46,7 @@ def main():
 	print options.tgtPort
 	tgtPorts=str(options.tgtPort).split(", ")
 	if(tgtHost==None) | (tgtPorts[0]==None):
-		print "[-] You must specify a target host and port[s](within \"\")."
+		print parser.usage
 		exit(0)
 	portScan(tgtHost,tgtPorts)	
 if __name__=="__main__":
