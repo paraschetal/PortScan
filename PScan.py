@@ -5,6 +5,6 @@ parser.add_option('-p',dest='tgtPort',type='int',help='specify target port')
 (options,args)=parser.parse_args()
 tgtHost=options.tgtHost
 tgtPort=options.tgtPort
-if(tgtPort==None) | (tgtPort==None):
+if(tgtHost==None) | (tgtPort==None):
 	print parser.usage
 	exit(0)
