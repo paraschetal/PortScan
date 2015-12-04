@@ -1,4 +1,5 @@
 import optparse
+
 from socket import *
 def connScan(tgtHost,tgtPort):
 	try:
